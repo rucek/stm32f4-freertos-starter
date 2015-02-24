@@ -1,7 +1,9 @@
+#include <stdio.h>
 #include "diag/Trace.h"
 
 // board
-#include "stm32f4xx.h"
+#include "stm32f4xx_hal.h"
+#include "stm32f429i_discovery.h"
 
 // FreeRTOS
 #include "FreeRTOS.h"
@@ -12,18 +14,8 @@ void toggleLedWithTimer(void*);
 void detectButtonPress(void*);
 void toggleLedWithIpc(void*);
 void initializeHardware();
-void initializeGpioPin(GPIO_TypeDef *port, uint32_t pin, uint32_t mode);
 void createTask(TaskFunction_t code, const char * const name);
 void delayMillis(uint32_t millis);
-void toggleLed(uint16_t pin);
-GPIO_PinState readButtonState();
-
-#define LED_PORT GPIOG
-#define GREEN_LED_PIN GPIO_PIN_13
-#define RED_LED_PIN GPIO_PIN_14
-
-#define BUTTON_PORT GPIOA
-#define BUTTON_PIN GPIO_PIN_0
 
 xQueueHandle buttonPushesQueue;
 
@@ -64,7 +56,7 @@ void createTask(TaskFunction_t code, const char * const name) {
  */
 void toggleLedWithTimer(void *pvParameters) {
 	while (1) {
-		toggleLed(GREEN_LED_PIN);
+		BSP_LED_Toggle(LED3);
 		delayMillis(1500);
 	}
 }
@@ -78,11 +70,11 @@ void detectButtonPress(void *pvParameters) {
 
 	while (1) {
 		/* Detect Button Press  */
-		if (readButtonState() > 0) {
+		if (BSP_PB_GetState(BUTTON_KEY) > 0) {
 			/* Debounce */
-			while (readButtonState() > 0)
+			while (BSP_PB_GetState(BUTTON_KEY) > 0)
 				delayMillis(100);
-			while (readButtonState() == 0)
+			while (BSP_PB_GetState(BUTTON_KEY) == 0)
 				delayMillis(100);
 
 			xQueueSendToBack(buttonPushesQueue, &sig, 0); /* Send Message */
@@ -102,45 +94,28 @@ void toggleLedWithIpc(void *pvParameters) {
 		status = xQueueReceive(buttonPushesQueue, &sig, portMAX_DELAY); /* Receive Message */
 		/* portMAX_DELAY blocks task indefinitely if queue is empty */
 		if (status == pdTRUE) {
-			toggleLed(RED_LED_PIN);
+			BSP_LED_Toggle(LED4);
 		}
 	}
 }
 
 void initializeHardware() {
-	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
-	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOGEN;
-	initializeGpioPin(BUTTON_PORT, BUTTON_PIN, GPIO_MODE_INPUT);
-	initializeGpioPin(LED_PORT, GREEN_LED_PIN | RED_LED_PIN, GPIO_MODE_OUTPUT_PP);
+	HAL_Init();
 
-	HAL_GPIO_WritePin(LED_PORT, GREEN_LED_PIN, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(LED_PORT, RED_LED_PIN, GPIO_PIN_RESET);
-}
+	BSP_LED_Init(LED3);
+	BSP_LED_Init(LED4);
+	BSP_PB_Init(BUTTON_KEY, BUTTON_MODE_GPIO);
 
-void initializeGpioPin(GPIO_TypeDef *port, uint32_t pin, uint32_t mode) {
-	GPIO_InitTypeDef GPIO_InitStructure;
-
-	GPIO_InitStructure.Pin = pin;
-	GPIO_InitStructure.Mode = mode;
-	GPIO_InitStructure.Speed = GPIO_SPEED_FAST;
-	GPIO_InitStructure.Pull = GPIO_NOPULL;
-	HAL_GPIO_Init(port, &GPIO_InitStructure);
+	BSP_LED_On(LED3);
+	BSP_LED_Off(LED4);
 }
 
 void delayMillis(uint32_t millis) {
 	/*
 	 Delay for a period of time. vTaskDelay() places the task into
 	 the Blocked state until the period has expired.
-	 The delay period is spacified in 'ticks'. We can convert
-	 yhis in milisecond with the constant portTICK_RATE_MS.
+	 The delay period is specified in 'ticks'. We can convert
+	 this in millisecond with the constant portTICK_RATE_MS.
 	 */
 	vTaskDelay(millis / portTICK_RATE_MS);
-}
-
-void toggleLed(uint16_t pin) {
-	HAL_GPIO_TogglePin(LED_PORT, pin);
-}
-
-GPIO_PinState readButtonState() {
-	return HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN);
 }
