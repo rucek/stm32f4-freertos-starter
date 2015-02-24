@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_sai.c
   * @author  MCD Application Team
-  * @version V1.1.0
-  * @date    19-June-2014
+  * @version V1.2.0
+  * @date    26-December-2014
   * @brief   SAI HAL module driver.
   *          This file provides firmware functions to manage the following 
   *          functionalities of the Serial Audio Interface (SAI) peripheral:
@@ -158,7 +158,7 @@
   * @{
   */
 
-/** @defgroup SAI 
+/** @defgroup SAI SAI
   * @brief SAI HAL module driver
   * @{
   */
@@ -186,11 +186,11 @@ static void SAI_DMAError(DMA_HandleTypeDef *hdma);
 
 /* Private functions ---------------------------------------------------------*/
 
-/** @defgroup SAI_Private_Functions
+/** @defgroup SAI_Private_Functions  SAI Private Functions
   * @{
   */
 
-/** @defgroup SAI_Group1 Initialization and de-initialization functions 
+/** @defgroup SAI_Exported_Functions_Group1 Initialization and de-initialization functions 
  *  @brief    Initialization and Configuration functions 
  *
 @verbatim    
@@ -413,7 +413,7 @@ HAL_StatusTypeDef HAL_SAI_Init(SAI_HandleTypeDef *hsai)
   else /* sConfig->ClockSource == SAI_CLKSource_Ext */
   {
     /* Enable the External Clock selection */
-    __HAL_RCC_I2SCLK(RCC_I2SCLKSOURCE_EXT);
+    __HAL_RCC_I2S_CONFIG(RCC_I2SCLKSOURCE_EXT);
     
     saiclocksource = EXTERNAL_CLOCK_VALUE;
   }
@@ -422,7 +422,7 @@ HAL_StatusTypeDef HAL_SAI_Init(SAI_HandleTypeDef *hsai)
      MCLK_x = SAI_CK_x / (MCKDIV[3:0] * 2) with MCLK_x = 256 * FS
      FS = SAI_CK_x / (MCKDIV[3:0] * 2) * 256
      MCKDIV[3:0] = SAI_CK_x / FS * 512 */
-  if(hsai->Init.NoDivider == SAI_MASTERDIVIDER_ENABLED) 
+  if(hsai->Init.NoDivider == SAI_MASTERDIVIDER_ENABLE) 
   { 
     /* (saiclocksource x 10) to keep Significant digits */
     tmpclock = (((saiclocksource * 10) / ((hsai->Init.AudioFrequency) * 512)));
@@ -444,7 +444,7 @@ HAL_StatusTypeDef HAL_SAI_Init(SAI_HandleTypeDef *hsai)
 
   }
 
-  /* Initialise the error code */
+  /* Initialize the error code */
   hsai->ErrorCode = HAL_SAI_ERROR_NONE;
 
   /* Initialize the SAI state */
@@ -484,12 +484,6 @@ HAL_StatusTypeDef HAL_SAI_DeInit(SAI_HandleTypeDef *hsai)
   return HAL_OK;
 }
 
-// [ILG]
-#if defined ( __GNUC__ )
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#endif
-
 /**
   * @brief SAI MSP Init.
   * @param  hsai: pointer to a SAI_HandleTypeDef structure that contains
@@ -516,16 +510,11 @@ __weak void HAL_SAI_MspDeInit(SAI_HandleTypeDef *hsai)
    */ 
 }
 
-// [ILG]
-#if defined ( __GNUC__ )
-#pragma GCC diagnostic pop
-#endif
-
 /**
   * @}
   */
 
-/** @defgroup SAI_Group2 IO operation functions 
+/** @defgroup SAI_Exported_Functions_Group2 IO operation functions 
  *  @brief   Data transfers functions 
  *
 @verbatim   
@@ -645,12 +634,6 @@ HAL_StatusTypeDef HAL_SAI_Transmit(SAI_HandleTypeDef *hsai, uint16_t* pData, uin
   }
 }
 
-// [ILG]
-#if defined ( __GNUC__ )
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-
 /**
   * @brief  Receives an amount of data in blocking mode. 
   * @param  hsai: pointer to a SAI_HandleTypeDef structure that contains
@@ -727,11 +710,6 @@ HAL_StatusTypeDef HAL_SAI_Receive(SAI_HandleTypeDef *hsai, uint16_t *pData, uint
     return HAL_BUSY;
   }
 }
-
-// [ILG]
-#if defined ( __GNUC__ )
-#pragma GCC diagnostic pop
-#endif
 
 /**
   * @brief  Transmits an amount of data in no-blocking mode with Interrupt.
@@ -811,12 +789,6 @@ HAL_StatusTypeDef HAL_SAI_Transmit_IT(SAI_HandleTypeDef *hsai, uint16_t *pData, 
   }
 }
 
-// [ILG]
-#if defined ( __GNUC__ )
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-
 /**
   * @brief  Receives an amount of data in no-blocking mode with Interrupt.
   * @param  hsai: pointer to a SAI_HandleTypeDef structure that contains
@@ -888,11 +860,6 @@ HAL_StatusTypeDef HAL_SAI_Receive_IT(SAI_HandleTypeDef *hsai, uint16_t *pData, u
     return HAL_BUSY; 
   } 
 }
-
-// [ILG]
-#if defined ( __GNUC__ )
-#pragma GCC diagnostic pop
-#endif
 
 /**
   * @brief Pauses the audio stream playing from the Media.
@@ -1006,7 +973,7 @@ HAL_StatusTypeDef HAL_SAI_Transmit_DMA(SAI_HandleTypeDef *hsai, uint16_t *pData,
 
     hsai->State = HAL_SAI_STATE_BUSY_TX;
 
-    /* Set the SAI Tx DMA Half transfert complete callback */
+    /* Set the SAI Tx DMA Half transfer complete callback */
     hsai->hdmatx->XferHalfCpltCallback = SAI_DMATxHalfCplt;
 
     /* Set the SAI TxDMA transfer complete callback */
@@ -1068,10 +1035,10 @@ HAL_StatusTypeDef HAL_SAI_Receive_DMA(SAI_HandleTypeDef *hsai, uint16_t *pData, 
     
     hsai->State = HAL_SAI_STATE_BUSY_RX;
 
-    /* Set the SAI Rx DMA Half transfert complete callback */
+    /* Set the SAI Rx DMA Half transfer complete callback */
     hsai->hdmarx->XferHalfCpltCallback = SAI_DMARxHalfCplt;
 
-    /* Set the SAI Rx DMA transfert complete callback */
+    /* Set the SAI Rx DMA transfer complete callback */
     hsai->hdmarx->XferCpltCallback = SAI_DMARxCplt;
 
     /* Set the DMA error callback */
@@ -1165,12 +1132,6 @@ void HAL_SAI_IRQHandler(SAI_HandleTypeDef *hsai)
   } 
 }
 
-// [ILG]
-#if defined ( __GNUC__ )
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#endif
-
 /**
   * @brief Tx Transfer completed callbacks.
   * @param  hsai: pointer to a SAI_HandleTypeDef structure that contains
@@ -1193,7 +1154,7 @@ void HAL_SAI_IRQHandler(SAI_HandleTypeDef *hsai)
  __weak void HAL_SAI_TxHalfCpltCallback(SAI_HandleTypeDef *hsai)
 {
   /* NOTE : This function Should not be modified, when the callback is needed,
-            the HAL_SAI_TxHalfCpltCallback could be implenetd in the user file
+            the HAL_SAI_TxHalfCpltCallback could be implemented in the user file
    */ 
 }
 
@@ -1219,7 +1180,7 @@ __weak void HAL_SAI_RxCpltCallback(SAI_HandleTypeDef *hsai)
 __weak void HAL_SAI_RxHalfCpltCallback(SAI_HandleTypeDef *hsai)
 {
   /* NOTE : This function Should not be modified, when the callback is needed,
-            the HAL_SAI_RxCpltCallback could be implenetd in the user file
+            the HAL_SAI_RxCpltCallback could be implemented in the user file
    */
 }
 
@@ -1236,17 +1197,12 @@ __weak void HAL_SAI_ErrorCallback(SAI_HandleTypeDef *hsai)
    */ 
 }
 
-// [ILG]
-#if defined ( __GNUC__ )
-#pragma GCC diagnostic pop
-#endif
-
 /**
   * @}
   */
 
 
-/** @defgroup SAI_Group3 Peripheral State functions 
+/** @defgroup SAI_Exported_Functions_Group3 Peripheral State functions 
  *  @brief   Peripheral State functions 
  *
 @verbatim   
