@@ -1,12 +1,11 @@
-# STM32F429 + FreeRTOS 8.2 starter
+# STM32F429 + FreeRTOS 8.2 starter for OS X
 
-Based on Eclipse "New STM32F4xx C/C++ project" wizard + FreeRTOS 8.2 sources.
+Template project based on Eclipse *New STM32F4xx C/C++ project* wizard + [FreeRTOS](http://www.freertos.org/) 8.2 sources. Tested on OS X Yosemite.
 
-The original application, based on [this great tutorial](https://istarc.wordpress.com/2014/07/10/stm32f4-deploy-freertos-in-under-10-seconds/),  should blink the green LED (*PG13*) with a period of 1.5s and toggle the red one (*PG14*) when the blue button (*USER*) is pressed. This happens in three separate FreeRTOS tasks: first one for the green LED, second one for detecting button presses and putting them in a queue and the third one for consuming the queued events and toggling the red LED.
+The original application, based on [this FreeRTOS  tutorial](https://istarc.wordpress.com/2014/07/10/stm32f4-deploy-freertos-in-under-10-seconds/),  should blink the green LED (*PG13*) with a period of 1.5s and toggle the red one (*PG14*) when the blue button (*USER*) is pressed. This happens in three separate FreeRTOS tasks: first one for the green LED, second one for detecting button presses and putting them in a queue and the third one for consuming the queued events and toggling the red LED.
 
 ## Prerequisites
 
-### For OS X (tested on Yosemite):
 - [gcc-arm-none-eabi](https://launchpad.net/gcc-arm-embedded/4.9/4.9-2014-q4-major/+download/gcc-arm-none-eabi-4_9-2014q4-20141203-mac.tar.bz2)
 
 - [openocd](http://sourceforge.net/projects/gnuarmeclipse/files/OpenOCD/gnuarmeclipse-openocd-osx-0.8.0-2-201501311629.pkg/download)
