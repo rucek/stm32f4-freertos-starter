@@ -53,3 +53,4 @@ The original application, based on [this FreeRTOS  tutorial](https://istarc.word
 - https://istarc.wordpress.com/2014/07/10/stm32f4-deploy-freertos-in-under-10-seconds/
 - http://grafixmafia.net/updated-using-the-stm32f4-discovery-board-with-mac-osx-10-9-mavericks/
 - http://gnuarmeclipse.livius.net/blog/openocd-debugging/
+- https://github.com/dobromyslov/stm32f0-cmsis-cube-hal-freertos-template

@@ -1,21 +1,4 @@
-#include <stdio.h>
-#include "diag/Trace.h"
-
-// board
-#include "stm32f4xx_hal.h"
-#include "stm32f429i_discovery.h"
-
-// FreeRTOS
-#include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
-
-void toggleLedWithTimer(void*);
-void detectButtonPress(void*);
-void toggleLedWithIpc(void*);
-void initializeHardware();
-void createTask(TaskFunction_t code, const char * const name);
-void delayMillis(uint32_t millis);
+#include "main.h"
 
 xQueueHandle buttonPushesQueue;
 
@@ -37,6 +20,7 @@ int main(void) {
 	createTask(toggleLedWithTimer, "Task1");
 	createTask(detectButtonPress, "Task2");
 	createTask(toggleLedWithIpc, "Task3");
+	createTask(drawSmlLogo, "Logo");
 
 	/* Start the RTOS Scheduler */
 	vTaskStartScheduler();
@@ -99,6 +83,38 @@ void toggleLedWithIpc(void *pvParameters) {
 	}
 }
 
+void drawSmlLogo(void *pvParameters) {
+	while (1) {
+		BSP_LCD_Clear(LCD_COLOR_BLACK);
+		logoElementsDelay();
+		BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
+		BSP_LCD_FillCircle(100, 72, 10);
+		logoElementsDelay();
+		BSP_LCD_SetTextColor(LCD_COLOR_DARKBLUE);
+		BSP_LCD_FillRect(90, 87, 60, 20);
+		logoElementsDelay();
+		BSP_LCD_SetTextColor(LCD_COLOR_LIGHTBLUE);
+		BSP_LCD_FillCircle(140, 122, 10);
+		logoElementsDelay();
+		BSP_LCD_SetTextColor(LCD_COLOR_DARKMAGENTA);
+		BSP_LCD_FillRect(90, 137, 60, 20);
+		logoElementsDelay();
+		BSP_LCD_SetTextColor(LCD_COLOR_LIGHTMAGENTA);
+		BSP_LCD_FillRect(80, 162, 60, 20);
+		logoElementsDelay();
+		BSP_LCD_SetTextColor(LCD_COLOR_MAGENTA);
+		BSP_LCD_FillRect(90, 187, 60, 20);
+		logoElementsDelay();
+		BSP_LCD_SetTextColor(LCD_COLOR_DARKGREEN);
+		BSP_LCD_FillRect(90, 212, 60, 20);
+		logoElementsDelay();
+		BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
+		BSP_LCD_FillCircle(100, 247, 10);
+
+		delayMillis(1000);
+	}
+}
+
 void initializeHardware() {
 	HAL_Init();
 
@@ -108,6 +124,12 @@ void initializeHardware() {
 
 	BSP_LED_On(LED3);
 	BSP_LED_Off(LED4);
+
+	BSP_LCD_Init();
+	BSP_LCD_LayerDefaultInit(LCD_BACKGROUND_LAYER, LCD_FRAME_BUFFER);
+	BSP_LCD_SetLayerVisible(LCD_BACKGROUND_LAYER, ENABLE);
+	BSP_LCD_SelectLayer(LCD_BACKGROUND_LAYER);
+	BSP_LCD_DisplayOn();
 }
 
 void delayMillis(uint32_t millis) {
@@ -118,4 +140,17 @@ void delayMillis(uint32_t millis) {
 	 this in millisecond with the constant portTICK_RATE_MS.
 	 */
 	vTaskDelay(millis / portTICK_RATE_MS);
+}
+
+/**
+ * fixed SysTick interrupt handling
+ * borrowed from https://github.com/dobromyslov/stm32f0-cmsis-cube-hal-freertos-template
+ */
+extern void xPortSysTickHandler(void);
+
+void SysTick_Handler(void) {
+	if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED) {
+		xPortSysTickHandler();
+	}
+	HAL_IncTick();
 }
