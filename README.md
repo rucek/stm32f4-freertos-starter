@@ -40,9 +40,13 @@ The original application, based on [this FreeRTOS  tutorial](https://istarc.word
       - `../include/FreeRTOS/Source/include`
       - `../include/FreeRTOS/Source/portable/GCC/ARM_CM4F`
 
-4. Build the project to check if everything works.
+3. If any of the project files were modified by Eclipse during the import, run `git reset --hard` to restore the original files.
 
-3. Create an OpenOCD debug configuration as described in this  [tutorial](http://gnuarmeclipse.livius.net/blog/openocd-debugging/).
+4. Go to project properties, then *C/C++ General* / *Paths and Symbols* / *Source Location*, locate and expand the `/stm32f4-freertos-starter/system` folder and clear its attached filter, if not empty (click *Edit Filter...*, select all with `CMD+A`, click *Remove*)
+
+5. Build the project to check if everything works.
+
+6. Create an OpenOCD debug configuration as described in this  [tutorial](http://gnuarmeclipse.livius.net/blog/openocd-debugging/).
 
   **NOTE:** on the OpenOCD Debugger tab, the value of *Other options* (which is called *Config options* in Eclipse Luna) should be `-f board/stm32f429discovery.cfg` instead of what the tutorial suggests.
 
